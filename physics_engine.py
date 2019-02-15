@@ -24,10 +24,17 @@ Define the three available types of materials:
 (1) wood/fabric
 (2) composite
 (3) metal
+
+Assume the following densities:
+wood density = 500 kg/m^3 (Pine, white; https://www.engineeringtoolbox.com/wood-density-d_40.html)
+fabric density = 1560 kg/m^3 (cotton; https://en.wikipedia.org/wiki/Cotton#Fiber_properties)
+wood/fabric density = 0.2*(wood density) + 0.8*(fabric density) = 1348 kg/m^3
+composite density = 1744 kg/m^3 (CFRP: IM-7 PAN-Based Carbon; https://www.engineeringtoolbox.com/polymer-composite-fibers-d_1226.html)
+metal density = 2700 kg/m^3 (aluminum; https://en.wikipedia.org/wiki/Aluminium)
 """
-woodfabric = Material("wood/fabric", 0.001)
-composite = Material("composite", 0.002)
-metal = Material("metal", 0.003)
+woodfabric = Material("wood/fabric", 1348)
+composite = Material("composite", 1744)
+metal = Material("metal", 2700)
 
 # -----------------------------------------------------------------------------
 
@@ -180,8 +187,26 @@ class SinglePropeller(Engine):
         volume = 5
         thrust = 0.50
         drag = 0.10
+
+        Assume this is like the propeller engine in a Pitts Special.
+        power = 260 hp (194 kW)
+        (ref: https://en.wikipedia.org/wiki/Pitts_Special#Specifications_(S-2B))
+        propeller diameter = 78 in (1.98 m)
+        (ref: https://hartzellprop.com/wp-content/uploads/159-0000-R66-WA.pdf, pg. 1487)
+        propeller efficiency = 0.85
+        (ref: https://aviation.stackexchange.com/questions/29611/how-to-calculate-the-thrust-of-a-piston-or-turboprop-engine)
+        air density = 1.23 kg/m^3
+        (ref: https://en.wikipedia.org/wiki/Density_of_air#Dry_air)
+        thrust = (power^2 * efficiency^2 * pi/2 * diameter^2 * air_density)^(1/3)
+        (ref: https://aviation.stackexchange.com/questions/29611/how-to-calculate-the-thrust-of-a-piston-or-turboprop-engine)
         """
-        Engine.__init__(self, material, 5, 0.50, 0.10)
+        power = 194000 # W
+        diameter = 1.98 # m
+        efficiency = 0.85
+        pi = 3.14
+        air_density = 1.23 # kg/m^3
+        thrust = (power**2.0 * efficiency**2.0 * pi/2.0 * diameter**2.0 * air_density)**(1.0/3.0) # N
+        Engine.__init__(self, material, 5, thrust, 0.10)
 
 class DoublePropeller(Engine):
     def __init__(self, material):
@@ -191,8 +216,16 @@ class DoublePropeller(Engine):
         volume = 10
         thrust = 0.70
         drag = 0.15
+
+        Assume twice the thrust of SinglePropeller.
         """
-        Engine.__init__(self, material, 10, 0.70, 0.15)
+        power = 194000 # W
+        diameter = 1.98 # m
+        efficiency = 0.85
+        pi = 3.14
+        air_density = 1.23 # kg/m^3
+        thrust = (power**2.0 * efficiency**2.0 * pi/2.0 * diameter**2.0 * air_density)**(1.0/3.0) # N
+        Engine.__init__(self, material, 10, thrust*2.0, 0.15)
 
 class SingleJet(Engine):
     def __init__(self, material):
@@ -202,8 +235,12 @@ class SingleJet(Engine):
         volume = 7
         thrust = 0.80
         drag = 0.05
+
+        Assume this is like the J75 jet engine in an F-106.
+        thrust = 17500 lbf (77.84 kN)
+        (ref: https://en.wikipedia.org/wiki/Pratt_%26_Whitney_J75#Specifications_(JT4A-11))
         """
-        Engine.__init__(self, material, 7, 0.80, 0.05)
+        Engine.__init__(self, material, 7, 77840, 0.05)
 
 class DoubleJet(Engine):
     def __init__(self, material):
@@ -213,8 +250,10 @@ class DoubleJet(Engine):
         volume = 14
         thrust = 1.00
         drag = 0.10
+
+        Assume twice the thrust of the SingleJet.
         """
-        Engine.__init__(self, material, 14, 1.00, 0.10)
+        Engine.__init__(self, material, 14, 77840*2.0, 0.10)
 
 
 # -----------------------------------------------------------------------------
@@ -287,44 +326,6 @@ class Airplane:
 # -----------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    # nb = NarrowBody(metal)
-    # print("\nNarrow body fuselage:")
-    # print(nb)
-    # wb = WideBody(metal)
-    # print("\nWide body fuselage:")
-    # print(wb)
-    # ss = ShortStraight(metal)
-    # print("\nShort straight wing:")
-    # print(ss)
-    # ls = LongStraight(metal)
-    # print("\nLong straight wing:")
-    # print(ls)
-    # sb = SweptBack(metal)
-    # print("\nSwept back wing:")
-    # print(sb)
-    # d = Delta(metal)
-    # print("\nDelta wing:")
-    # print(d)
-    # sp = SinglePropeller(metal)
-    # print("\nSingle propeller engine:")
-    # print(sp)
-    # dp = DoublePropeller(metal)
-    # print("\nDouble propeller engine:")
-    # print(dp)
-    # sj = SingleJet(metal)
-    # print("\nSingle jet engine:")
-    # print(sj)
-    # dj = DoubleJet(metal)
-    # print("\nDouble jet engine:")
-    # print(dj)
-
-    # # simulate a single airplane takeoff
-    # a = Airplane(material=composite, fuselage="wide body", wing="swept back", engine="double jet")
-    # print("\n\nBoeing 787 Dreamliner:")
-    # print(a)
-    # print("fly?")
-    # print(a.takeoff())
-
     # define all the different airplane materials and parts
     materials = (woodfabric, composite, metal)
     fuselages = ("narrow body", "wide body")
